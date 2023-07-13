@@ -18,7 +18,7 @@ Run migrations:
 docker exec -it gfgptvr_app php artisan migrate:fresh 
 ```
 
-Visit: http://127.0.0.1:6256
+Visit: http://127.0.0.1:112
 
 Run tests:
 ```
