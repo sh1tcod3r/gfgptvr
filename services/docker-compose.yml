@@ -1,0 +1,70 @@
+version: '3'
+
+services:
+  # PHP Service
+  gfgptvr_app:
+    build:
+      context: ../gfgptvr
+      dockerfile: Dockerfile
+    image: gfgptvr/php
+    container_name: gfgptvr_app
+    working_dir: /var/www
+    volumes:
+      - ../gfgptvr:/var/www
+      - ../gfgptvr/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - gfgptvr-network2
+
+  gfgptvr_phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    tty: true
+    environment:
+      - PMA_ARBITRARY=1
+    links:
+      - gfgptvr_db
+    ports:
+      - "6131:80"
+    networks:
+      - gfgptvr-network2
+
+  # Nginx Service
+  gfgptvr_webserver:
+    image: nginx:alpine
+    container_name: gfgptvr_webserver
+    ports:
+      - "112:80"
+      - "113:443"
+    volumes:
+      - ../gfgptvr:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - gfgptvr-network2
+
+  # MySQL Service
+  gfgptvr_db:
+    image: mysql:5.7.22
+    container_name: gfgptvr_db
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    command: ['mysqld', '--character-set-server=utf8', '--collation-server=utf8_bin']
+    volumes:
+      - dbdata_gfgptvr:/var/lib/mysql/
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - gfgptvr-network2
+
+# Docker Networks
+networks:
+  gfgptvr-network2:
+    driver: bridge
+
+# Volumes
+volumes:
+  dbdata_gfgptvr:
+
